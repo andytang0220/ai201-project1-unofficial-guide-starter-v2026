@@ -23,8 +23,8 @@ For at least 4 of my 5 test questions, the retrieved chunks include one that
 contains the answer.
 
 **Why this target:**
-<!-- e.g. "One of my questions is about a topic only two documents mention, so
-     I expect that one to be hard." -->
+I expect the varying section lengths of the corpus documents to give some 
+trouble to the system in retrieving relevant chunks.
 
 ---
 
@@ -33,8 +33,8 @@ contains the answer.
 Every answer the system produces names at least one source document.
 
 **Why this target:**
-<!-- Why all five and not four? What about your setup makes that achievable —
-     or what would have to go wrong for it not to be? -->
+It is imperative that all answers are based in concrete context in the corpus, 
+otherwise the system has no point in existing.
 
 ---
 
@@ -50,8 +50,9 @@ in at least 4 of 5 tries.
      just keep five of them, or the "4 of 5" above has nothing to be 4 of. -->
 
 **Why this target:**
-<!-- What did your distances look like when you set the cutoff in Milestone 4?
-     Was there a clean gap, or did the two groups overlap? -->
+The relevance gate should stop the system from returning a non-sense answer 
+by stopping the output if retrieved chunks are not able to provide context 
+for an informative answer.
 
 ---
 
