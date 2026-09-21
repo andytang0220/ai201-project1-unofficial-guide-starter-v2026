@@ -68,11 +68,12 @@ in at least 4 of 5 tries.
           sentence cut in half at either end."
        - "No chunk is shorter than 200 characters, since anything below that
           in my corpus turned out to be a heading with no content under it." -->
-
+At least 4 of 5 sampled chunks must contain context of a named place in the region.
 
 
 **Why this target:**
-
+Information in answers are only useful if they can actually be traced to a 
+place in the region.
 
 
 ---
@@ -86,11 +87,12 @@ in at least 4 of 5 tries.
      handles badly, about source attribution being correct rather than merely
      present — anything, as long as it names a number or an observable
      outcome. -->
-
+All responses should come back within 30 seconds.
 
 
 **Why this target:**
-
+Users likely have multiple questions about the region so a high latency will 
+severly impact their experience negatively.
 
 
 ---
