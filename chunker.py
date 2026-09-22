@@ -22,6 +22,7 @@ to it, write down what you saw, and move on. That's a real observation about
 your pipeline, not giving up.
 """
 
+import re
 from dataclasses import dataclass
 
 import config
@@ -80,24 +81,82 @@ def fallback_split(
     return chunks
 
 
+def guard(text: str) -> list[str]:
+    """
+    Character windows that heading split does not reach.
+
+    Two cases: a document with no headings at all, and a single section longer
+    than CHUNK_SIZE.
+    """
+    if len(text) <= config.CHUNK_SIZE:
+        return [text]
+    return [c.text for c in fallback_split([Document(source="", text=text)])]
+
+
+def split_one(doc: Document) -> list[str]:
+    """The chunk texts for one document, in order."""
+    headings = list(re.compile(r"(?m)^(#{1,2})[ \t]+(.+?)[ \t]*$").finditer(doc.text))
+    if not headings:
+        return guard(doc.text.strip())
+
+    texts: list[str] = []
+
+    preface = doc.text[: headings[0].start()].strip()
+    if preface:
+        texts.extend(guard(preface))
+
+    scope = ""
+    for position, heading in enumerate(headings):
+        level = len(heading.group(1))
+        title = heading.group(2).strip()
+
+        if level == 1:
+            scope = title
+            label = title
+        else:
+            label = f"{scope} — {title}" if scope else title
+
+        after = (
+            headings[position + 1].start()
+            if position + 1 < len(headings)
+            else len(doc.text)
+        )
+        body = doc.text[heading.end() : after].strip()
+        if not body:
+            continue
+
+        texts.extend(f"{label}\n\n{piece}" for piece in guard(body))
+
+    return texts
+
+
 def split_documents(documents: list[Document]) -> list[Chunk]:
     """
-    Split documents into chunks. ⚠️ REPLACE THE BODY OF THIS IN MILESTONE 3.
+    Split documents on their Markdown headings with the H1 as a scope.
 
-    Right now it just calls the fallback. That is the plain, generic behaviour
-    the brief is talking about.
+    city_guides documents are composed of labelled sections. Cutting 
+    on sections means no cut off sentences.
 
-    When you write your own strategy, set `produced_by` to
-    "chunker.py::split_documents" so your README's Sample Chunks section names
-    the right function. `app.py chunks` prints that string for you.
+    H1 of town specific guides provides a scope for chunks from that 
+    document, giving town context to every chunk.
 
-    Things worth thinking about before you write any code:
-      - Are your documents short posts or long guides?
-      - Is the useful information in one sentence, or spread over a paragraph?
-      - Would splitting on paragraph breaks keep more thoughts intact than
-        splitting on a character count?
+    Section splitting does not need an overlap since it is not an arbitrary 
+    cut and thus does not need to repair anything. Applied inside 'guard' 
+    which can call fallback_split applies an arbitrary cut and thus needs 
+    the overlap repair again.
     """
-    return fallback_split(documents)
+    chunks: list[Chunk] = []
+    for doc in documents:
+        for index, text in enumerate(split_one(doc)):
+            chunks.append(
+                Chunk(
+                    text=text,
+                    source=doc.source,
+                    index=index,
+                    produced_by="chunker.py::split_documents",
+                )
+            )
+    return chunks
 
 
 def describe(chunks: list[Chunk]) -> str:
