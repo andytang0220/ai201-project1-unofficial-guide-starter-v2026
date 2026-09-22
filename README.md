@@ -21,37 +21,25 @@
 
 ## What This Does
 
-<!-- Three or four sentences. Which corpus you picked, and the kinds of
-     questions your system answers. Write it for someone who has never seen
-     this repo.
-
-     Milestone 5. -->
+I picked the city_guides corpus. The system answers questions about specific 
+towns/villages relating to getting there, getting around, eating and drinking, 
+what to see, where to stay, when to go, and practical notes. It also answers 
+questions about general accessibility, seasonality, walking, and eating in the 
+region. 
 
 ## Chunking Strategy
 
-**Chunk size:**
-**Overlap:**
+**Chunk size: 800**
+**Overlap: 120**
 
-<!-- What about YOUR documents made you pick these numbers? Short posts and
-     long sectioned guides don't want the same chunking, and "800 seemed
-     reasonable" earns nothing. Point at something you noticed when you read
-     the documents in Milestone 1.
-
-     If you changed your mind partway through, say so and say why. That's worth
-     more than pretending you got it right first time.
-
-     Milestone 3. -->
+The chunking strategy does not use an arbitrary chunk size and overlap. These are 
+reserved for the fallback strategy. The primary strategy chunks based on sections.
+Since the documents in the city_guides corpus are all sectioned out with headers, 
+it was advantageous to chunk based on these since it guarantees no cut off 
+sentences and thus complete thoughts. Additionally, document headers are injected 
+into the chunks to provide them with context on what town is being referenced.
 
 ## Sample Chunks
-
-<!-- Five chunks, pasted as text. Label each one and name the file it came from
-     AND the function that produced it — the grader checks your code against
-     what you claim here.
-
-     `python app.py chunks -n 5` prints all three for you. Copy them straight
-     across.
-
-     Milestone 3. -->
 
 **Chunk 1** — source: guide_accessibility.md#0 `` — produced by: chunker.py::split_documents``
 Getting around the region with limited mobility
@@ -91,45 +79,48 @@ June and September for the beach without the crowds. July and August are busy an
 
 ## Sample Answer
 
-<!-- One complete question and answer, pasted as text, with the source line
-     visible. Milestone 4. -->
-
 **Question:**
+python .\app.py --variant headings ask "What is the most accessible town in the region on foot?"
 
 **Answer:**
+   (best distance 0.481, cutoff 0.65)
+
+According to `guide_walking.md`, Thornby Wells is the region's most accessible town on foot, featuring flat, formal gardens and level streets.
+
+Sources retrieved: guide_accessibility.md, guide_corry_vale.md, guide_walking.md
+
+1 model calls this session, 703 tokens (671 in, 32 out)
 
 ```
 ```
 
 **My relevance cutoff:**
 
-<!-- The number you set in config.py, and how you got there.
-
-     You ran five questions your corpus covers and the five in OUT_OF_SCOPE
-     that it clearly doesn't, and wrote down the best distance for each. What
-     did those two groups look like? Where was the gap? Put the actual numbers
-     here — the table below wants all ten rows.
-
-     Milestone 4. -->
+Threshold set to 0.65. Adjust up from the starter 0.6 since original was too 
+close to the closest distance of test questions 1 and 5. 0.65 was a value that 
+was closer to the middle point of the two groupings.
 
 | Question | In corpus? | Best distance |
 |---|---|---|
-|  |  |  |
+|"What is the most accessible town in the region on foot?"|Yes|0.481|
+|"When is the busiest time for Halden Bay?"|Yes|0.277|
+|"What hours do the Kestrelford pubs serve food in the evening?"|Yes|0.172|
+|"How many rooms does the Elder Ness pub have?"|Yes|0.177|
+|"What regions are difficult to get around for those with limited mobility"|Yes|0.4268|
+|"What is the capital of Mongolia?"|No|0.808|
+|"How do I change the oil in a diesel engine?"|No|0.881|
+|"Who won the 1994 World Cup?"|No|0.982|
+|"What is the recommended dosage of ibuprofen for a headache?"|No|0.835|
+|"How do I write a for loop in Rust?"|No|0.859|
 
 ## How I Used AI
 
-<!-- Two specific moments. For each: what you asked for, what came back, and
-     what you changed about it.
-
-     "I asked Claude to write the chunking function from my notes. It ignored
-     the overlap, so I added that myself" is the level of detail we're after.
-     "I used AI to help me code" is not.
-
-     Milestone 5. -->
-
 **1.**
-
+I asked Claude to check over my idea to chunk by sections. It identified to me 
+the issue of section chunks not having any context on which town they are about. 
+This led to the addition of headers to each section chunk.
 **2.**
+I used Claude to implement the chunking by sections strategy.
 
 <!-- ── Stretch features ─────────────────────────────────────────────────────
      Doing one? Say so here BEFORE you start. A feature this README never
