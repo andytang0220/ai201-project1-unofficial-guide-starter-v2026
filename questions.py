@@ -27,7 +27,8 @@ QUESTIONS = [
     {"question": "When is the busiest time for Halden Bay?", "expects": "August"},
     {"question": "What hours do the Kestrelford pubs serve food in the evening?", "expects": "between 6 and 8:30"},
     {"question": "How many rooms does the Elder Ness pub have?", "expects": "4"},
-    {"question": "What regions are difficult to get around for those with limited mobility", "expects": "Kestrelford, Halden Bay, Corry Vale"},
+    {"question": "What regions are difficult to get around for those with limited mobility", "expects": "Kestrelford, Halden Bay, Corry Vale, and Elder Ness"},
+    # Unit 2 edit: Altered from Unit 1 to include Elder Ness - I did not notice Elder Ness was also in the Difficult to get around section.
 ]
 
 # Questions from a different world entirely. Your gate should refuse all five.
