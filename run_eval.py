@@ -35,6 +35,7 @@ you a scorer; you'd learn nothing from it.
 import argparse
 import datetime as dt
 import sys
+import time
 from pathlib import Path
 
 import config
@@ -52,7 +53,7 @@ def load_scorer():
 
 
 def run_once(question: str, top_k, threshold, corpus, variant):
-    """One question, one run. Returns the answer and what retrieval gave us."""
+    """One question, one run. Returns the answer, retrieval, gate decision, and response time."""
     from store import search
     import gate
     from generate import answer_from_chunks
@@ -61,11 +62,13 @@ def run_once(question: str, top_k, threshold, corpus, variant):
     decision = gate.check(results, threshold=threshold)
 
     if not decision.passed:
-        return gate.REFUSAL, results, decision
+        return gate.REFUSAL, results, decision, None
 
     # cache=False on purpose. Three runs have to be three real answers.
+    start = time.perf_counter()
     answer = answer_from_chunks(question, results, cache=False)
-    return answer, results, decision
+    elapsed = time.perf_counter() - start
+    return answer, results, decision, elapsed
 
 
 def main():
@@ -101,6 +104,7 @@ def main():
 
     transcript = []
     rows = []
+    all_chunks = []
 
     for item in items:
         question = item["question"]
@@ -108,15 +112,18 @@ def main():
         print(f"\n{question}")
 
         run_results = []
+        run_chunks = []
         for run in range(1, args.runs + 1):
-            answer, results, decision = run_once(
+            answer, results, decision, elapsed = run_once(
                 question, top_k, threshold, corpus, args.variant
             )
+            run_chunks.append(results)
             passed = judge(question, expects, answer, results) if judge else None
             run_results.append(passed)
 
             mark = {True: "pass", False: "fail", None: "—"}[passed]
-            print(f"  run {run}: {mark}  (best distance {decision.best_distance:.3f})")
+            timing = f", {elapsed:.2f}s" if elapsed is not None else ""
+            print(f"  run {run}: {mark}  (best distance {decision.best_distance:.3f}{timing})")
 
             transcript.append(
                 {
@@ -126,16 +133,18 @@ def main():
                     "sources": sorted({r.source for r in results}),
                     "best_distance": decision.best_distance,
                     "gate_passed": decision.passed,
+                    "response_time_s": elapsed,
                 }
             )
 
         rows.append({"question": question, "expects": expects, "runs": run_results})
+        all_chunks.append({"question": question, "runs": run_chunks})
 
     gate_rows = check_out_of_scope(top_k, threshold, corpus, args.variant)
 
     write_report(
         rows, transcript, gate_rows, args, corpus, top_k, threshold,
-        scored=judge is not None,
+        scored=judge is not None, results=all_chunks,
     )
 
 
@@ -176,7 +185,7 @@ def check_out_of_scope(top_k, threshold, corpus, variant):
     return rows
 
 
-def write_report(rows, transcript, gate_rows, args, corpus, top_k, threshold, scored):
+def write_report(rows, transcript, gate_rows, args, corpus, top_k, threshold, scored, results):
     config.RESULTS_DIR.mkdir(exist_ok=True)
     stamp = dt.datetime.now().strftime("%Y-%m-%d_%H%M")
     label = f"_{args.label}" if args.label else ""
@@ -248,11 +257,15 @@ def write_report(rows, transcript, gate_rows, args, corpus, top_k, threshold, sc
               "output as text, not a description of it.", ""]
 
     for entry in transcript:
+        response_time = (
+            f"{entry['response_time_s']:.2f}s" if entry["response_time_s"] is not None else "n/a"
+        )
         lines += [
             f"### {entry['question']} — run {entry['run']}",
             "",
             f"- Best distance: {entry['best_distance']:.4f} "
             f"({'passed' if entry['gate_passed'] else 'refused by'} the gate)",
+            f"- Response time: {response_time}",
             f"- Sources retrieved: {', '.join(entry['sources']) or 'none'}",
             "",
             "```",
@@ -268,6 +281,14 @@ def write_report(rows, transcript, gate_rows, args, corpus, top_k, threshold, sc
     print(f"\nWrote {path.relative_to(config.ROOT)}")
     print(gen.usage())
     print("\nCommit this file. It's the evidence the run actually happened.")
+    print("\nRetrieved chunks:")
+    for entry in results:
+        print(f"\n  {entry['question']}")
+        for run_num, chunks in enumerate(entry["runs"], start=1):
+            print(f"    Run {run_num}:")
+            for rank, chunk in enumerate(chunks, start=1):
+                print(f"      {rank}. [{chunk.label}] distance={chunk.distance:.4f}")
+                print(f"         {chunk.text}")
 
 
 if __name__ == "__main__":
