@@ -69,7 +69,7 @@ for an informative answer.
           sentence cut in half at either end."
        - "No chunk is shorter than 200 characters, since anything below that
           in my corpus turned out to be a heading with no content under it." -->
-At least 4 of 5 sampled chunks must contain context of a named place in the region.
+92 of 94 chunks name a specific place from the region inside the chunk itself.
 
 
 **Why this target:**
