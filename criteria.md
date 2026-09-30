@@ -69,7 +69,7 @@ for an informative answer.
           sentence cut in half at either end."
        - "No chunk is shorter than 200 characters, since anything below that
           in my corpus turned out to be a heading with no content under it." -->
-92 of 94 chunks name a specific place from the region inside the chunk itself.
+Across all retrieved chunks for all 5 test questions (25) at least 24 name a place from the region inside the chunk text.
 
 
 **Why this target:**
