@@ -121,6 +121,10 @@ the issue of section chunks not having any context on which town they are about.
 This led to the addition of headers to each section chunk.
 **2.**
 I used Claude to implement the chunking by sections strategy.
+**3.**
+I used Claude to help me implement the additions to run_eval.py as well as scorer.py.
+**4.**
+I used Claude to help me check over the eval output when evaluating my criteria.
 
 <!-- ── Stretch features ─────────────────────────────────────────────────────
      Doing one? Say so here BEFORE you start. A feature this README never
@@ -149,11 +153,11 @@ I used Claude to implement the chunking by sections strategy.
 
 | Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
 |---|---|---|---|---|---|
-| 1. Retrieved chunk contains the answer | 4 of 5 |  |  |  |  |
-| 2. Every answer names a source | 5 of 5 |  |  |  |  |
-| 3. Gate stops out-of-corpus questions | 4 of 5 |  |  |  |  |
-| 4. | | | | | |
-| 5. | | | | | |
+| For at least 4 of my 5 test questions, the retrieved chunks include one that contains the answer. | 4 of 5 | 5/5 | 5/5 | 5/5 | MET | The closest chunk indicated by the system contained the expected word(s) for at least 4 of 5 of the test questions in all 3 runs |
+| Every answer the system produces names at least one source document. | 5 of 5 | 5/5 | 5/5 | 5/5 | MET | Every single answer given for all 5 test questions across all 3 runs had at least one source document noted |
+| When I ask a question my documents clearly don't cover, the relevance gate stops it and the system returns "I don't have enough information about that" — in at least 4 of 5 tries. | 4 of 5 | 5/5 | 5/5 | 5/5 | MET | At least 4 of the 5 out of scope questions across all 3 runs returned a negative answer |
+| At least 4 of 5 sampled chunks must contain context of a named place in the region. | 4 of 5 | 5/5 | 5/5 | 5/5 | MET | At least 4 of the 5 retrieved chunks for all questions in all 3 runs mentioned a specific region or place in name |
+| All responses should come back within 30 seconds. | 5 of 5 | 5/5 | 5/5 | 5/5 | MET | All answers took less than 30 seconds to come back across all 3 runs |
 
 <!-- Underneath, paste the REAL output for each criterion from one of your
      runs — the actual text your system produced, not a description of it.
@@ -172,11 +176,11 @@ I used Claude to implement the chunking by sections strategy.
 
 | # | Criterion | Verdict | How I decided |
 |---|---|---|---|
-| 1 |  |  |  |
-| 2 |  |  |  |
-| 3 |  |  |  |
-| 4 |  |  |  |
-| 5 |  |  |  |
+| For at least 4 of my 5 test questions, the retrieved chunks include one that contains the answer. | MET | The closest chunk indicated by the system contained the expected word(s) for at least 4 of 5 of the test questions in all 3 runs |
+| Every answer the system produces names at least one source document. | MET | Every single answer given for all 5 test questions across all 3 runs had at least one source document noted |
+| When I ask a question my documents clearly don't cover, the relevance gate stops it and the system returns "I don't have enough information about that" — in at least 4 of 5 tries. | MET | At least 4 of the 5 out of scope questions across all 3 runs returned a negative answer |
+| At least 4 of 5 sampled chunks must contain context of a named place in the region. | MET | At least 4 of the 5 retrieved chunks for all questions in all 3 runs mentioned a specific region or place in name |
+| All responses should come back within 30 seconds. | MET | All answers took less than 30 seconds to come back across all 3 runs |
 
 ## Diagnoses
 
@@ -197,12 +201,15 @@ I used Claude to implement the chunking by sections strategy.
      low, and which one you'd tighten and to what.
 
      Milestone 3. -->
+None of the criteria missed. I think the targets were definitely set low, especially criterion 4.
+I would change that to be:
+24 of 25 retrieved chunks name a specific place from the region inside the chunk itself
 
 ## The Improvement
 
-**What I changed:**
+**What I changed: At least 4 of 5 sampled chunks must contain context of a named place in the region -> Across all retrieved chunks for all 5 test questions (25) at least 24 name a place from the region inside the chunk text**
 
-**Why I picked it:**
+**Why I picked it: The rationale for changing this is because the original criterion could not fail. Only one chunk in the entire corpus doesn't reference a place name so saying 4 of 5 passes for all samples. By counting across all retrieved chunks, the single counterexample becomes visible and fails loudly.**
 
 <!-- Connect it to a specific diagnosis above in one sentence. If you can't,
      you picked a fix because it sounded impressive. -->
@@ -214,11 +221,11 @@ I used Claude to implement the chunking by sections strategy.
 
 | Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
 |---|---|---|---|---|---|
-| 1. Retrieved chunk contains the answer | 4 of 5 |  |  |  |  |
-| 2. Every answer names a source | 5 of 5 |  |  |  |  |
-| 3. Gate stops out-of-corpus questions | 4 of 5 |  |  |  |  |
-| 4. | | | | | |
-| 5. | | | | | |
+| 1. Retrieved chunk contains the answer | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 2. Every answer names a source | 5 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 3. Gate stops out-of-corpus questions | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 4. Across all retrieved chunks for all 5 test questions (25) at least 24 name a place from the region inside the chunk text | 24 of 25 | 24/25 | 24/25 | 24/25 | MET |
+| 5. All responses should come back within 30 seconds. | 5 of 5 | 5/5 | 5/5 | 5/5 | MET |
 
 **Did it help?**
 
@@ -228,6 +235,7 @@ I used Claude to implement the chunking by sections strategy.
      tell.
 
      Milestone 4. -->
+The criteria 4 change helped in that it made the criteria more measureable and showed me that the one failing chunk is actually the top-ranked result for question 5. It did not help in actually improving the system, however.
 
 ## What's Still Broken
 
@@ -238,6 +246,7 @@ I used Claude to implement the chunking by sections strategy.
      not.
 
      Milestone 5. -->
+No criteria are still missing.
 
 ## What I'd Do Differently
 
@@ -245,3 +254,4 @@ I used Claude to implement the chunking by sections strategy.
      differently, and why?
 
      Milestone 5. -->
+I would be much more aggressive on performance of the system. Based on testing, it seems that chunking and retrieval are fairly solid from a strategy standpoint but performance is also important and the current criteria 5's 30s threshold is actually way too long for a user just asking a question to a batch of text documents.
